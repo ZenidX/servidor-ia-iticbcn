@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}</style>
+<title>Servidor de IA del ITICBCN</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: documento técnico de una columna con índice lateral fijo en escritorio; bloques "rack" para la arquitectura */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --fg: #16202a;
+  --muted: #5a6875;
+  --line: #d8dee4;
+  --accent: #0b6e79;      /* petróleo */
+  --accent-soft: #e2f1f2;
+  --now: #a24a2a;          /* estado actual */
+  --now-soft: #f8ebe5;
+  --gpu0: #0b6e79;
+  --gpu1: #6a4fb3;
+  --f-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1418; --surface: #161d23; --fg: #e3e8ec; --muted: #93a1ad; --line: #2a343d;
+    --accent: #4fc0cb; --accent-soft: #15302f; --now: #e08a68; --now-soft: #33211a;
+    --gpu0: #4fc0cb; --gpu1: #a993e8; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1418; --surface: #161d23; --fg: #e3e8ec; --muted: #93a1ad; --line: #2a343d;
+  --accent: #4fc0cb; --accent-soft: #15302f; --now: #e08a68; --now-soft: #33211a;
+  --gpu0: #4fc0cb; --gpu1: #a993e8; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 16px/1.62 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+.shell { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; padding-block: 48px 96px; }
+@media (max-width: 860px) { .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 28px 64px; } .toc { display: none; } }
+
+.toc { position: sticky; top: calc(24px + env(safe-area-inset-top, 0px)); align-self: start; font-size: 13.5px; }
+.toc p { font: 600 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: s; }
+.toc li { counter-increment: s; }
+.toc a { display: flex; gap: 10px; padding: 5px 8px; border-radius: 4px; color: var(--fg); text-decoration: none; }
+.toc a::before { content: counter(s); font: 500 12px/1.6 var(--f-mono); color: var(--muted); min-width: 1.2em; }
+.toc a:hover { background: var(--accent-soft); }
+
+main { min-width: 0; }
+header.doc { border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 8px; }
+.eyebrow { font: 500 12px/1.4 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+h1 { font: 800 clamp(34px, 6vw, 54px)/1.02 var(--f-display); font-stretch: 85%; letter-spacing: -.01em; margin: 0 0 18px; text-wrap: balance; }
+.lede { font-size: 19px; line-height: 1.55; max-width: 62ch; margin: 0 0 18px; }
+.byline { font-size: 14px; color: var(--muted); margin: 0; }
+
+section { padding-top: 44px; scroll-margin-top: 16px; }
+h2 { font: 700 27px/1.15 var(--f-display); font-stretch: 90%; margin: 0 0 16px; text-wrap: balance; display: flex; gap: 14px; align-items: baseline; }
+h2 .n { font: 500 14px/1 var(--f-mono); color: var(--accent); }
+h3 { font: 600 18px/1.3 var(--f-body); margin: 30px 0 10px; }
+p, li { max-width: 68ch; }
+ul, ol.plain { padding-left: 1.2em; }
+li + li { margin-top: 6px; }
+strong { font-weight: 600; }
+code { font: 14px var(--f-mono); background: var(--accent-soft); padding: 1px 5px; border-radius: 3px; }
+
+.principle { border-left: 3px solid var(--accent); padding: 4px 0 4px 18px; margin: 22px 0 0; font-size: 17px; max-width: 64ch; }
+.note { background: var(--now-soft); border-radius: 6px; padding: 14px 18px; margin: 18px 0 0; max-width: 68ch; font-size: 15px; }
+.note strong { color: var(--now); }
+
+/* Ficha técnica */
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-top: 18px; }
+.spec div { background: var(--surface); padding: 14px 16px; min-width: 0; }
+.spec dt { font: 500 11px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.spec dd { margin: 0; font-size: 15px; }
+.spec .gpu dd { font: 700 20px/1.2 var(--f-display); font-stretch: 90%; color: var(--accent); }
+
+/* Tablas */
+.tbl { overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 560px; }
+th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+thead th { font: 600 11.5px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+tbody th { font-weight: 600; white-space: nowrap; }
+.cmp td.now { color: var(--fg); background: var(--now-soft); }
+.cmp td.new { background: var(--accent-soft); }
+.cmp thead th.now { color: var(--now); }
+.cmp thead th.new { color: var(--accent); }
+.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Problemas */
+.issues { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 16px; padding: 0; list-style: none; }
+.issues li { max-width: none; margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; font-size: 14.5px; }
+.issues b { display: block; font: 600 15px/1.3 var(--f-body); color: var(--now); margin-bottom: 4px; }
+
+/* Diagrama de arquitectura */
+.arch { margin-top: 20px; display: grid; gap: 10px; font-size: 14px; }
+.tier { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 14px 16px; min-width: 0; }
+.tier > .lbl { font: 500 11px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.tier.edge { background: transparent; border-style: dashed; text-align: center; color: var(--muted); }
+.arrow { text-align: center; color: var(--muted); font: 14px/1 var(--f-mono); }
+.routes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.route { display: grid; gap: 2px; padding: 8px 10px; border-radius: 6px; background: var(--bg); }
+.route code { background: none; padding: 0; font-weight: 500; color: var(--accent); }
+.route span { color: var(--muted); font-size: 13px; }
+.cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 10px; }
+@media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
+.gpus { display: grid; gap: 8px; margin-top: 10px; }
+.gpu-row { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; }
+.chip { font: 600 12px/1 var(--f-mono); padding: 7px 0; text-align: center; border-radius: 4px; color: var(--surface); }
+.chip.g0 { background: var(--gpu0); }
+.chip.g1 { background: var(--gpu1); }
+.tier ul { margin: 0; padding-left: 1.1em; }
+.tier li + li { margin-top: 3px; }
+
+/* Plan */
+.steps { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 0; counter-reset: p; }
+.steps li { counter-increment: p; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); max-width: none; margin: 0; }
+.steps li::before { content: counter(p); font: 700 22px/1 var(--f-display); color: var(--accent); }
+.steps .t { font: 500 13px/1.5 var(--f-mono); color: var(--muted); white-space: nowrap; }
+@media (max-width: 520px) { .steps li { grid-template-columns: 32px minmax(0, 1fr); } .steps .t { grid-column: 2; } }
+
+.decide { list-style: none; padding: 0; display: grid; gap: 10px; margin-top: 16px; }
+.decide li { max-width: none; margin: 0; padding: 12px 16px 12px 44px; position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.decide li::before { content: ""; position: absolute; left: 16px; top: 16px; width: 14px; height: 14px; border: 2px solid var(--accent); border-radius: 3px; }
+
+footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="toc" aria-label="Índice">
+    <p>Contenido</p>
+    <ol>
+      <li><a href="#objetivo">Para qué es</a></li>
+      <li><a href="#hardware">El hardware</a></li>
+      <li><a href="#ahora">Cómo está ahora</a></li>
+      <li><a href="#propuesta">Propuesta</a></li>
+      <li><a href="#capacidad">Capacidad</a></li>
+      <li><a href="#comparativa">Comparativa</a></li>
+      <li><a href="#plan">Plan de migración</a></li>
+      <li><a href="#decidir">Qué decidir</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="doc">
+      <p class="eyebrow">Borrador para el equipo docente · octubre 2026</p>
+      <h1>Servidor de IA del ITICBCN</h1>
+      <p class="lede">Una propuesta para que el servidor de GPUs del centro dé servicio de modelos de lenguaje a las clases, aloje nuestras aplicaciones y sostenga el I+D+i, de forma estable, segura y sin que nadie tenga que entrar en la máquina.</p>
+      <p class="byline">Xavi Lara · Coordinador DUAL &amp; I+D+i</p>
+    </header>
+
+    <section id="objetivo">
+      <h2><span class="n">01</span>Para qué es el servidor</h2>
+      <p>Proponemos que sirva para tres cosas, por este orden:</p>
+      <ol class="plain">
+        <li><strong>Servicio de LLM al centro.</strong> Un chat y una API de modelos de lenguaje para las actividades de clase, que pueda usar el profesorado y el alumnado sin depender de servicios externos ni de cuentas personales.</li>
+        <li><strong>Alojar nuestras aplicaciones,</strong> como CoorDUAL (la gestión de la FP Dual) y las que vengan. Los datos personales del alumnado se quedan dentro del centro.</li>
+        <li><strong>I+D+i:</strong> modelos de vídeo e imagen para contenido propio del ITIC (ya aprobado) y entrenamiento o <em>fine-tuning</em> en proyectos de clase.</li>
+      </ol>
+      <p class="principle"><strong>Principio:</strong> nadie se conecta al sistema operativo salvo para montar y configurar servicios. Profesorado y alumnado lo usan solo por web y por API.</p>
+    </section>
+
+    <section id="hardware">
+      <h2><span class="n">02</span>El hardware que tenemos</h2>
+      <dl class="spec">
+        <div class="gpu"><dt>GPU</dt><dd>2 × RTX 6000 Ada · 48 GB</dd></div>
+        <div class="gpu"><dt>Memoria de GPU</dt><dd>96 GB en total</dd></div>
+        <div><dt>CPU</dt><dd>Xeon w5-2465X · 16 núcleos / 32 hilos</dd></div>
+        <div><dt>RAM</dt><dd>128 GB · 4 ranuras libres</dd></div>
+        <div><dt>Disco</dt><dd>1 × NVMe 2 TB</dd></div>
+        <div><dt>Equipo</dt><dd>HP Z4 G5</dd></div>
+      </dl>
+      <p class="note"><strong>Ojo:</strong> las GPUs son Ada Lovelace de 48 GB, no Blackwell de 96 GB cada una como pensábamos. Siguen siendo muy capaces: soportan FP8 y caben modelos de 30 a 70 mil millones de parámetros (ver <a href="#capacidad">capacidad</a>).</p>
+    </section>
+
+    <section id="ahora">
+      <h2><span class="n">03</span>Cómo está montado ahora</h2>
+      <ul>
+        <li><strong>Windows 11 Pro de escritorio</strong> como sistema base, con Ubuntu dentro de WSL.</li>
+        <li><strong>Una cuenta de administrador compartida</strong> por la que entra quien necesita algo.</li>
+        <li><strong>Dos Ollama</strong>, uno en Windows y otro en WSL, que se disputan el mismo puerto con modelos distintos.</li>
+        <li><strong>Open WebUI</strong> (el chat) lanzado a mano; tras un reinicio no vuelve solo.</li>
+        <li><strong>Proyectos de compañeros</strong> en carpetas dentro del Ubuntu de WSL.</li>
+      </ul>
+      <p>En las últimas semanas ya se ha montado el acceso remoto de administración por un túnel cifrado (SSH solo con clave, ningún puerto abierto a internet), ComfyUI para el I+D+i de vídeo como servicio en la GPU 1, y CoorDUAL en contenedores con su base de datos y su repositorio git en el propio servidor.</p>
+
+      <h3>Problemas de este montaje</h3>
+      <ul class="issues">
+        <li><b>Frágil</b>Los servicios dependen de una sesión de Windows abierta. Un reinicio por actualizaciones deja al centro sin chat.</li>
+        <li><b>No escala a una clase</b>Ollama atiende bien a una persona; con 25-30 alumnos a la vez las respuestas se encolan.</li>
+        <li><b>Sin control de uso</b>No hay claves por grupo, ni cuotas, ni registro de quién usa qué.</li>
+        <li><b>Inseguro</b>Una cuenta compartida da acceso total, y el escritorio invita a "entrar a mirar".</li>
+        <li><b>Sin copias</b>Un único disco. Si falla, se pierden chats, modelos y la base de datos de CoorDUAL.</li>
+        <li><b>A ciegas</b>Sin monitorización ni rastro de cambios: nadie sabe si algo ha caído ni qué se tocó.</li>
+      </ul>
+    </section>
+
+    <section id="propuesta">
+      <h2><span class="n">04</span>Propuesta</h2>
+      <p class="principle">Un servidor Linux sin escritorio. Todo corre en contenedores, se entra solo por web o API, y la configuración vive en un repositorio git.</p>
+
+      <h3>Sistema operativo: Ubuntu Server 24.04 LTS</h3>
+      <ul>
+        <li><strong>Las herramientas de GPU son de Linux.</strong> vLLM, NVIDIA Container Toolkit y la monitorización de GPU funcionan de forma nativa; sobre WSL van peor y con más limitaciones.</li>
+        <li><strong>Servicios que arrancan solos</strong> tras un reinicio, sin que nadie inicie sesión.</li>
+        <li><strong>Sin escritorio,</strong> no hay nada que abrir.</li>
+        <li><strong>No hay alternativa razonable en Windows:</strong> pasar las GPUs a una máquina virtual Linux solo existe en Windows Server, no en Windows 11 Pro.</li>
+      </ul>
+
+      <h3>Arquitectura</h3>
+      <div class="arch" role="figure" aria-label="Esquema de la arquitectura propuesta">
+        <div class="tier edge">Internet y red del ITIC · túnel cifrado de Cloudflare, sin puertos abiertos</div>
+        <div class="arrow">↓</div>
+        <div class="tier">
+          <div class="lbl">Proxy inverso + HTTPS</div>
+          <div class="routes">
+            <div class="route"><code>chat.&lt;dominio&gt;</code>Open WebUI<span>Login Google @iticbcn.cat</span></div>
+            <div class="route"><code>api.&lt;dominio&gt;</code>LiteLLM<span>Claves por profe, grupo o alumno</span></div>
+            <div class="route"><code>&lt;app&gt;.&lt;dominio&gt;</code>Aplicaciones<span>CoorDUAL y las que vengan</span></div>
+            <div class="route"><code>admin.&lt;dominio&gt;</code>Grafana y panel<span>Solo administradores</span></div>
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="cols">
+          <div class="tier">
+            <div class="lbl">Capa LLM</div>
+            LiteLLM reparte las peticiones, aplica cuotas y registra el uso.
+            <div class="gpus">
+              <div class="gpu-row"><span class="chip g0">GPU 0</span><span>vLLM con el modelo de clase</span></div>
+              <div class="gpu-row"><span class="chip g1">GPU 1</span><span>2.º modelo, vídeo o entrenamiento</span></div>
+            </div>
+          </div>
+          <div class="tier">
+            <div class="lbl">Aplicaciones</div>
+            <ul>
+              <li>Un stack de contenedores por aplicación</li>
+              <li>Red y base de datos propias</li>
+              <li>Copias cifradas si hay datos personales</li>
+            </ul>
+          </div>
+        </div>
+        <div class="tier">
+          <div class="lbl">Transversal</div>
+          <div class="routes">
+            <div class="route">Monitorización<span>Prometheus, GPU, Grafana y avisos de caída</span></div>
+            <div class="route">Copias<span>restic a un 2.º disco y fuera del servidor</span></div>
+            <div class="route">Configuración<span>repo git <code>infra-super</code>, una carpeta por servicio</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Las piezas</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Pieza</th><th>Qué hace</th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><th>vLLM</th><td>Sirve los modelos en la GPU</td><td>Atiende muchas peticiones a la vez con <em>batching</em> continuo: lo que necesita una clase entera.</td></tr>
+          <tr><th>LiteLLM</th><td>Puerta única de la API, compatible con OpenAI</td><td>Claves por profesor, grupo o alumno, con cuota y registro de uso. Los ejercicios de Python o agentes funcionan igual que contra OpenAI, pero en local y gratis.</td></tr>
+          <tr><th>Open WebUI</th><td>Chat tipo ChatGPT</td><td>Login con la cuenta del centro y grupos por curso. Nadie necesita cuenta en el servidor.</td></tr>
+          <tr><th>Ollama</th><td>Probar modelos nuevos</td><td>Se queda como banco de pruebas, no para servir a clase.</td></tr>
+          <tr><th>ComfyUI</th><td>Imagen y vídeo</td><td>Ya funciona; pasa a ser un contenedor más.</td></tr>
+          <tr><th>Traefik o Caddy</th><td>Proxy inverso y HTTPS</td><td>Un único punto de entrada con certificados automáticos.</td></tr>
+          <tr><th>Cloudflare Tunnel + Access</th><td>Acceso desde fuera</td><td>Sin abrir puertos; las rutas de administración, solo para cuentas autorizadas.</td></tr>
+          <tr><th>Prometheus + Grafana</th><td>Monitorización</td><td>Uso de GPU, memoria y servicios; aviso si algo cae.</td></tr>
+          <tr><th>restic</th><td>Copias de seguridad</td><td>Copias cifradas e incrementales a otro disco y fuera del servidor.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Reparto de las GPUs</h3>
+      <ul>
+        <li><strong>GPU 0, siempre:</strong> el LLM de clase. No se toca.</li>
+        <li><strong>GPU 1, flexible:</strong> un segundo modelo (código o multimodal) en horario lectivo; vídeo, entrenamiento y <em>fine-tuning</em> fuera de él.</li>
+        <li><strong>Las dos juntas</strong> solo en ventanas planificadas, para un modelo grande.</li>
+      </ul>
+
+      <h3>Quién entra y cómo</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Quién</th><th>Cómo</th><th>A qué</th></tr></thead>
+        <tbody>
+          <tr><th>Administradores (1-2)</th><td>SSH con clave, cuenta nominal, por el túnel</td><td>Sistema y configuración</td></tr>
+          <tr><th>Profesorado</th><td>Web con Google @iticbcn.cat y API con su clave</td><td>Chat, API y sus aplicaciones</td></tr>
+          <tr><th>Alumnado</th><td>Web con Google @iticbcn.cat y API con clave de grupo o personal</td><td>Chat y API, con cuota</td></tr>
+          <tr><th>Proyectos de compañeros</th><td>Contenedor propio o JupyterHub con GPU y cuota</td><td>Su entorno, sin tocar el sistema</td></tr>
+        </tbody>
+      </table></div>
+      <p>No hay cuentas compartidas. Los cambios se hacen en el repo <code>infra-super</code> y se aplican con <code>docker compose up</code>: cada cambio queda con autor, fecha y vuelta atrás.</p>
+
+      <h3>Datos y RGPD</h3>
+      <ul>
+        <li><strong>Los datos no salen del centro.</strong> Conversaciones del chat y datos de aplicaciones (CoorDUAL tiene datos del alumnado) se quedan en el servidor.</li>
+        <li><strong>Copias cifradas,</strong> con la copia externa en un destino del centro (NAS o Drive institucional).</li>
+        <li><strong>Registro mínimo:</strong> LiteLLM guarda el consumo por clave, no el contenido.</li>
+      </ul>
+      <p>Es un buen argumento frente a usar servicios externos de IA con el alumnado.</p>
+    </section>
+
+    <section id="capacidad">
+      <h2><span class="n">05</span>Qué capacidad tendremos</h2>
+      <p>Estimaciones orientativas, a validar con una prueba de carga con un grupo real.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Escenario</th><th>GPU</th><th>Modelo de ejemplo</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><th>Modelo de clase</th><td class="num">1 × 48 GB</td><td>24-32 B en FP8 (familias Qwen, Mistral, Gemma)</td><td>25-30 alumnos a la vez con respuesta fluida</td></tr>
+          <tr><th>Dos modelos</th><td class="num">2 × 48 GB</td><td>Uno general + uno de código o visión</td><td>Dos grupos con necesidades distintas</td></tr>
+          <tr><th>Modelo grande</th><td class="num">2 × 48 GB juntas</td><td>~70 B cuantizado a 4 bits</td><td>Demostraciones, evaluaciones, I+D</td></tr>
+          <tr><th>Vídeo e imagen</th><td class="num">1 × 48 GB</td><td>Modelos de vídeo en ComfyUI</td><td>Fuera del horario lectivo</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="comparativa">
+      <h2><span class="n">06</span>Comparativa</h2>
+      <div class="tbl"><table class="cmp">
+        <thead><tr><th></th><th class="now">Ahora</th><th class="new">Propuesta</th></tr></thead>
+        <tbody>
+          <tr><th>Sistema</th><td class="now">Windows 11 Pro de escritorio + Ubuntu en WSL</td><td class="new">Ubuntu Server 24.04 LTS, sin escritorio</td></tr>
+          <tr><th>Cuentas</th><td class="now">Una cuenta de administrador compartida</td><td class="new">1-2 administradores nominales, SSH con clave</td></tr>
+          <tr><th>Uso diario</th><td class="now">Entrando al escritorio o a WSL</td><td class="new">Solo web (chat) y API</td></tr>
+          <tr><th>Arranque</th><td class="now">Depende de una sesión abierta</td><td class="new">Todo arranca solo tras un reinicio</td></tr>
+          <tr><th>Servir LLM</th><td class="now">Dos Ollama que chocan en el mismo puerto</td><td class="new">vLLM para una clase entera; Ollama solo para pruebas</td></tr>
+          <tr><th>API para clase</th><td class="now">No hay</td><td class="new">LiteLLM compatible con OpenAI, con claves y cuotas</td></tr>
+          <tr><th>Chat</th><td class="now">Open WebUI lanzado a mano</td><td class="new">Open WebUI fijo, login del centro, grupos por curso</td></tr>
+          <tr><th>GPUs</th><td class="now">Sin reparto</td><td class="new">GPU 0 para clase, GPU 1 flexible, política escrita</td></tr>
+          <tr><th>Aplicaciones</th><td class="now">Mezcladas en un Ubuntu compartido</td><td class="new">Un stack aislado por aplicación</td></tr>
+          <tr><th>Copias</th><td class="now">Ninguna, un solo disco</td><td class="new">Nocturna a un 2.º disco + copia fuera</td></tr>
+          <tr><th>Monitorización</th><td class="now">Ninguna</td><td class="new">Grafana y avisos de caída</td></tr>
+          <tr><th>Configuración</th><td class="now">Cambios a mano, sin rastro</td><td class="new">Repo git con historial y vuelta atrás</td></tr>
+          <tr><th>Acceso remoto</th><td class="now">Túnel cifrado + SSH con clave (ya hecho)</td><td class="new">Igual, con control de acceso en las rutas de administración</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="plan">
+      <h2><span class="n">07</span>Plan de migración</h2>
+      <ol class="steps">
+        <li><div><strong>Inventario y copia</strong> de usuarios y chats de Open WebUI, modelos, proyectos de compañeros y la base de datos de CoorDUAL.</div><span class="t">½ día</span></li>
+        <li><div><strong>Hablar con quien usa hoy la máquina</strong> para dar sitio a sus proyectos en la nueva arquitectura.</div><span class="t">—</span></li>
+        <li><div><strong>Reinstalar con Ubuntu Server,</strong> drivers NVIDIA, Docker y el túnel.</div><span class="t">½ día</span></li>
+        <li><div><strong>Montar el repo <code>infra-super</code>:</strong> proxy, LiteLLM, vLLM, Open WebUI, monitorización y copias.</div><span class="t">1-2 días</span></li>
+        <li><div><strong>Restaurar</strong> Open WebUI, CoorDUAL y ComfyUI como stacks.</div><span class="t">½ día</span></li>
+        <li><div><strong>Prueba de carga con un grupo real</strong> y ajuste de cuotas.</div><span class="t">1 sesión</span></li>
+      </ol>
+      <p>Casi todo se hace en remoto. El corte de servicio se limita a la reinstalación, que puede hacerse un día sin clase.</p>
+    </section>
+
+    <section id="decidir">
+      <h2><span class="n">08</span>Qué necesitamos decidir</h2>
+      <ul class="decide">
+        <li><strong>Aprobar la reinstalación</strong> con Ubuntu Server.</li>
+        <li><strong>Subdominio</strong> del servicio, y si el chat se abre fuera del centro o solo dentro.</li>
+        <li><strong>Política de uso:</strong> cuotas por alumno, horarios de la GPU 1 y quién puede pedir las dos GPUs.</li>
+        <li><strong>Administradores:</strong> quién, como máximo dos personas.</li>
+        <li><strong>Un segundo NVMe</strong> de 2-4 TB para copias y modelos: la mejora de hardware más rentable (unos 150-300 €).</li>
+        <li><strong>Opcional:</strong> ampliar la RAM (quedan 4 ranuras) para más contenedores o modelos en CPU.</li>
+      </ul>
+    </section>
+
+    <footer>Institut TIC de Barcelona · Propuesta de arquitectura del servidor de IA · borrador de octubre de 2026</footer>
+  </main>
+</div>
+</body>
+</html>
