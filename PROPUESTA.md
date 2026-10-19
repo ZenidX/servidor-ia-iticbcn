@@ -106,10 +106,7 @@ El centro tiene un servidor con dos GPUs profesionales. Proponemos que sirva par
 Lo dejamos escrito para evitar conflictos:
 
 - **GPU 0, siempre:** el LLM de clase. No se toca.
-- **GPU 1, por reserva:**
-  - Cuando una clase la pide: un segundo modelo (por ejemplo, de código o multimodal).
-  - El resto del tiempo: vídeo (ComfyUI) e I+D.
-  - Trabajos largos (entrenamiento, *fine-tuning*, renders): de noche o en fin de semana.
+- **GPU 1, flexible:** un segundo modelo (por ejemplo, de código o multimodal), vídeo (ComfyUI), entrenamiento y *fine-tuning*.
 - **Las dos juntas:** solo en ventanas planificadas, para un modelo grande (~70 B).
 
 ### 4.5 Acceso
@@ -140,7 +137,7 @@ Estimaciones orientativas; se validarán con pruebas de carga.
 | Modelo de clase | 1 × 48 GB | 24-32 B en FP8 (familias Qwen, Mistral, Gemma) | 25-30 alumnos a la vez con respuesta fluida |
 | Dos modelos en paralelo | 2 × 48 GB | Uno general + uno de código o visión | Dos grupos con necesidades distintas |
 | Modelo grande | 2 × 48 GB juntas | ~70 B cuantizado (4-bit) | Demostraciones, evaluaciones, proyectos de I+D |
-| Vídeo / imagen | 1 × 48 GB | Modelos de vídeo en ComfyUI | Cuando la GPU 1 no está reservada por una clase |
+| Vídeo / imagen | 1 × 48 GB | Modelos de vídeo en ComfyUI | Contenido propio e I+D |
 
 ## 6. Comparativa
 
@@ -171,13 +168,13 @@ Estimaciones orientativas; se validarán con pruebas de carga.
 | 5 | **Restaurar** Open WebUI, CoorDUAL y ComfyUI como stacks. | ½ día |
 | 6 | **Prueba de carga con un grupo real** y ajuste de cuotas. | 1 sesión de clase |
 
-Casi todo se puede hacer en remoto. El corte de servicio se limita a la reinstalación, que se puede hacer en un día sin clase.
+Casi todo se puede hacer en remoto. El corte de servicio se limita a la reinstalación.
 
 ## 8. Qué necesitamos decidir
 
 - **Aprobación de la reinstalación** con Ubuntu Server.
 - **Subdominio** para el servicio, del centro o uno propio, y si el chat es accesible desde fuera del centro o solo desde dentro.
-- **Política de uso:** cuotas por alumno, cómo se reserva la GPU 1 y quién puede pedir las dos GPUs.
+- **Política de uso:** cuotas por alumno y quién puede usar las dos GPUs.
 - **Administradores:** quién, como máximo dos personas.
 - **Un segundo NVMe** de 2-4 TB para copias y modelos. Es la mejora de hardware más rentable (unos 150-300 €).
 - **Opcional:** ampliar la RAM, que tiene 4 ranuras libres, si se quieren cargar modelos grandes en CPU o tener más contenedores.

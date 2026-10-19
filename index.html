@@ -285,7 +285,7 @@ footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
       <h3>Reparto de las GPUs</h3>
       <ul>
         <li><strong>GPU 0, siempre:</strong> el LLM de clase. No se toca.</li>
-        <li><strong>GPU 1, flexible:</strong> se asigna por reserva. Cuando una clase la pide, sirve un segundo modelo (código o multimodal); el resto del tiempo es para vídeo e I+D. Los trabajos largos (entrenamiento, <em>fine-tuning</em>, renders) se programan de noche o en fin de semana.</li>
+        <li><strong>GPU 1, flexible:</strong> un segundo modelo (código o multimodal), vídeo, entrenamiento y <em>fine-tuning</em>.</li>
         <li><strong>Las dos juntas</strong> solo en ventanas planificadas, para un modelo grande.</li>
       </ul>
 
@@ -319,7 +319,7 @@ footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
           <tr><th>Modelo de clase</th><td class="num">1 × 48 GB</td><td>24-32 B en FP8 (familias Qwen, Mistral, Gemma)</td><td>25-30 alumnos a la vez con respuesta fluida</td></tr>
           <tr><th>Dos modelos</th><td class="num">2 × 48 GB</td><td>Uno general + uno de código o visión</td><td>Dos grupos con necesidades distintas</td></tr>
           <tr><th>Modelo grande</th><td class="num">2 × 48 GB juntas</td><td>~70 B cuantizado a 4 bits</td><td>Demostraciones, evaluaciones, I+D</td></tr>
-          <tr><th>Vídeo e imagen</th><td class="num">1 × 48 GB</td><td>Modelos de vídeo en ComfyUI</td><td>Cuando la GPU 1 no está reservada por una clase</td></tr>
+          <tr><th>Vídeo e imagen</th><td class="num">1 × 48 GB</td><td>Modelos de vídeo en ComfyUI</td><td>Contenido propio e I+D</td></tr>
         </tbody>
       </table></div>
     </section>
@@ -356,7 +356,7 @@ footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
         <li><div><strong>Restaurar</strong> Open WebUI, CoorDUAL y ComfyUI como stacks.</div><span class="t">½ día</span></li>
         <li><div><strong>Prueba de carga con un grupo real</strong> y ajuste de cuotas.</div><span class="t">1 sesión</span></li>
       </ol>
-      <p>Casi todo se hace en remoto. El corte de servicio se limita a la reinstalación, que puede hacerse un día sin clase.</p>
+      <p>Casi todo se hace en remoto. El corte de servicio se limita a la reinstalación.</p>
     </section>
 
     <section id="decidir">
@@ -364,7 +364,7 @@ footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
       <ul class="decide">
         <li><strong>Aprobar la reinstalación</strong> con Ubuntu Server.</li>
         <li><strong>Subdominio</strong> del servicio, y si el chat se abre fuera del centro o solo dentro.</li>
-        <li><strong>Política de uso:</strong> cuotas por alumno, cómo se reserva la GPU 1 y quién puede pedir las dos GPUs.</li>
+        <li><strong>Política de uso:</strong> cuotas por alumno y quién puede usar las dos GPUs.</li>
         <li><strong>Administradores:</strong> quién, como máximo dos personas.</li>
         <li><strong>Un segundo NVMe</strong> de 2-4 TB para copias y modelos: la mejora de hardware más rentable (unos 150-300 €).</li>
         <li><strong>Opcional:</strong> ampliar la RAM (quedan 4 ranuras) para más contenedores o modelos en CPU.</li>
