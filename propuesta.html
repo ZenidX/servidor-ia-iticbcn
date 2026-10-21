@@ -165,7 +165,6 @@ footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
         <li><strong>Servicio de LLM al centro.</strong> Un chat y una API de modelos de lenguaje para las actividades de clase, que pueda usar el profesorado y el alumnado a la vez, sin depender de servicios externos ni de cuentas personales.</li>
         <li><strong>Entrenamiento y prácticas.</strong> Notebooks de Jupyter con GPU para entrenar y ajustar modelos en clase y en proyectos, sin tener que parar el servicio de LLM.</li>
       </ol>
-      <p>Las aplicaciones (CoorDUAL) y el I+D de vídeo (ComfyUI), que hoy también corren aquí, se trasladan a otra máquina. Así las dos GPUs quedan enteras para la IA de clase.</p>
       <p class="principle"><strong>Principio:</strong> nadie se conecta al sistema operativo salvo para montar y configurar servicios. Profesorado y alumnado lo usan solo por web y por API.</p>
     </section>
 
@@ -193,7 +192,7 @@ footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
         <li><strong>Una cuenta de administrador compartida</strong> por la que entra quien necesita algo.</li>
         <li><strong>Ollama en Windows</strong> sirve los modelos (gpt-oss 120B, Qwen 3.5 35B, Gemma 4 31B, Qwen3-Coder 30B y otros).</li>
         <li><strong>Dos chats:</strong> el webchat del centro, que está en otro servidor y usa el Ollama de este por la red interna, y un Open WebUI local que se lanza con un script.</li>
-        <li><strong>En la misma máquina</strong> corren también CoorDUAL, ComfyUI y proyectos de compañeros en WSL.</li>
+        <li><strong>Proyectos de compañeros</strong> en carpetas dentro del Ubuntu de WSL.</li>
       </ul>
 
       <h3>Problemas de este montaje</h3>
@@ -335,7 +334,6 @@ footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
         <thead><tr><th></th><th class="now">Ahora</th><th class="new">Propuesta</th></tr></thead>
         <tbody>
           <tr><th>Sistema</th><td class="now">Windows 11 Pro de escritorio + Ubuntu en WSL</td><td class="new">Ubuntu Server 24.04 LTS, sin escritorio</td></tr>
-          <tr><th>Uso de la máquina</th><td class="now">LLM, CoorDUAL, ComfyUI y proyectos, todo junto</td><td class="new">Solo IA de clase; CoorDUAL y ComfyUI van a otra máquina</td></tr>
           <tr><th>Cuentas</th><td class="now">Una cuenta de administrador compartida</td><td class="new">1-2 administradores nominales, SSH con clave</td></tr>
           <tr><th>Uso diario</th><td class="now">Entrando al escritorio o a WSL</td><td class="new">Solo web (chat, Jupyter) y API</td></tr>
           <tr><th>Arranque</th><td class="now">Depende de una sesión abierta</td><td class="new">Todo arranca solo tras un reinicio</td></tr>
@@ -354,7 +352,6 @@ footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
     <section id="plan">
       <h2><span class="n">07</span>Plan de migración</h2>
       <ol class="steps">
-        <li><div><strong>Trasladar CoorDUAL y ComfyUI</strong> a otra máquina. Los dos ya van en contenedores, así que el traslado es copiar datos y levantarlos.</div><span class="t">1 día</span></li>
         <li><div><strong>Inventario y copia</strong> de usuarios y chats de los dos Open WebUI, modelos y proyectos de compañeros.</div><span class="t">½ día</span></li>
         <li><div><strong>Reinstalar con Ubuntu Server,</strong> drivers NVIDIA, Docker y el túnel.</div><span class="t">½ día</span></li>
         <li><div><strong>Montar el repo <code>infra-super</code>:</strong> proxy, vLLM, LiteLLM, Open WebUI, JupyterHub, monitorización y copias.</div><span class="t">1-2 días</span></li>
@@ -369,7 +366,6 @@ footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line);
       <ul class="decide">
         <li><strong>Aprobar la reinstalación</strong> con Ubuntu Server.</li>
         <li><strong>El modelo:</strong> uno multimodal de ~30B en una GPU y la otra para entrenar, o gpt-oss 120B en las dos.</li>
-        <li><strong>A qué máquina van</strong> CoorDUAL y ComfyUI.</li>
         <li><strong>El webchat del centro:</strong> traerlo a este servidor o mantener el actual.</li>
         <li><strong>Política de uso:</strong> cuotas por alumno en la API y en JupyterHub.</li>
         <li><strong>Administradores:</strong> quién, como máximo dos personas.</li>
